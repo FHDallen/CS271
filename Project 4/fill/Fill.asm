@@ -1,52 +1,61 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/4/Fill.asm
+// File name: projects/04/Fill.asm
 
-// Runs an infinite loop that listens to the keyboard input. 
-// When a key is pressed (any key), the program blackens the screen,
-// i.e. writes "black" in every pixel. When no key is pressed, 
-// the screen should be cleared.
+// Runs an infinite loop that listens to the keyboard input.
+// When a key is pressed (any key), the program blackens the screen
+// by writing 'black' in every pixel;
+// the screen should remain fully black as long as the key is pressed. 
+// When no key is pressed, the program clears the screen by writing
+// 'white' in every pixel;
+// the screen should remain fully clear as long as no key is pressed.
 
-// Multiplies R0 and R1 and stores the result in R2.
-// (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
+// Starting point
+@place
+M=0     // Initialize place at upper left corner
 
-// Initialize R2 to 0 (to store the result)
-@R2
-M=0
+(LOOP)
+@KBD    // Take in keyboard value
+D=M     // Put it into D
+@WHITE
+D;JEQ   // If keyboard value == 0 (not pressed) goto WHITE
+@BLACK
+0;JMP   // Otherwise, goto BLACK
 
-// Check if R0 or R1 is zero, jump to END if either is zero
-@R0
-D=M
-@CHECK_R1
-D;JEQ
+(WHITE)
+@place
+D=M     // Put place into D
+@MIN_PLACE
+D;JLT   // Jump to LOOP if we are at less than minimum (0)
+@SCREEN
+A=M+D   // Calculate address in screen
+M=0     // Fill pixel with white
+@place
+M=M-1   // Decrease place
+@LOOP
+0;JMP   // Jump to LOOP
 
-(CHECK_R1)
-@R1
-D=M
-@END
-D;JEQ
+(BLACK)
+@place
+D=M     // Put place into D
+@MAX_PLACE
+D;JGE   // Jump to LOOP if we are at the max (place >= 8192)
+@SCREEN
+A=M+D   // Calculate address in screen
+M=-1    // Fill pixel with black
+@place
+M=M+1   // Increase place by 1
+@LOOP
+0;JMP   // Go back to LOOP
 
-// Main loop to multiply R1 and R0 using repeated addition
-(MULTIPLY)
-    // Add R1 to R2
-    @R2
-    D=M
-    @R1
-    D=D+M
-    @R2
-    M=D
-
-    // Decrement R0
-    @R0
-    D=M-1
-    M=D
-
-    // If R0 is not zero, repeat the loop
-    @MULTIPLY
-    D;JNE
-
-// End of the program
 (END)
-    @END
-    0;JMP
+@END
+0;JMP   // Infinite loop at end
+
+// Constants
+(MIN_PLACE)
+@0
+
+(MAX_PLACE)
+@8192
